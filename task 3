@@ -1,0 +1,160 @@
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+public class OnlineVotingSystem {
+
+    // User class to represent a voter
+    static class User {
+        private String username;
+        private String password;
+        private boolean hasVoted;
+
+        public User(String username, String password) {
+            this.username = username;
+            this.password = password;
+            this.hasVoted = false;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public boolean verifyPassword(String password) {
+            return this.password.equals(password);
+        }
+
+        public boolean hasVoted() {
+            return hasVoted;
+        }
+
+        public void setHasVoted(boolean hasVoted) {
+            this.hasVoted = hasVoted;
+        }
+    }
+
+    // Election class to manage candidates and votes
+    static class Election {
+        private Map<String, Integer> candidates;
+
+        public Election() {
+            candidates = new HashMap<>();
+        }
+
+        public void addCandidate(String candidateName) {
+            candidates.put(candidateName, 0);
+        }
+
+        public void voteFor(String candidateName) {
+            if (candidates.containsKey(candidateName)) {
+                candidates.put(candidateName, candidates.get(candidateName) + 1);
+            } else {
+                System.out.println("Candidate not found.");
+            }
+        }
+
+        public void displayResults() {
+            System.out.println("Election Results:");
+            for (Map.Entry<String, Integer> entry : candidates.entrySet()) {
+                System.out.println(entry.getKey() + ": " + entry.getValue() + " votes");
+            }
+        }
+    }
+
+    // Voting System class to handle user and election management
+    static class VotingSystem {
+        private Map<String, User> users;
+        private Election election;
+        private Scanner scanner;
+
+        public VotingSystem() {
+            users = new HashMap<>();
+            election = new Election();
+            scanner = new Scanner(System.in);
+
+            // Add some sample candidates
+            election.addCandidate("Alice");
+            election.addCandidate("Bob");
+        }
+
+        public void registerUser(String username, String password) {
+            if (!users.containsKey(username)) {
+                users.put(username, new User(username, password));
+                System.out.println("Registration successful.");
+            } else {
+                System.out.println("Username already exists.");
+            }
+        }
+
+        public boolean loginUser(String username, String password) {
+            User user = users.get(username);
+            return user != null && user.verifyPassword(password);
+        }
+
+        public void castVote(User user) {
+            if (user.hasVoted()) {
+                System.out.println("You have already voted.");
+                return;
+            }
+
+            System.out.println("Enter candidate name to vote for:");
+            String candidate = scanner.nextLine();
+            election.voteFor(candidate);
+            user.setHasVoted(true);
+            System.out.println("Vote cast successfully.");
+        }
+
+        public void viewResults() {
+            election.displayResults();
+        }
+    }
+
+    // Main class to run the voting system
+    public static void main(String[] args) {
+        VotingSystem votingSystem = new VotingSystem();
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\n1. Register");
+            System.out.println("2. Login");
+            System.out.println("3. View Results");
+            System.out.println("4. Exit");
+            System.out.print("Choose an option: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter username: ");
+                    String regUsername = scanner.nextLine();
+                    System.out.print("Enter password: ");
+                    String regPassword = scanner.nextLine();
+                    votingSystem.registerUser(regUsername, regPassword);
+                    break;
+                case 2:
+                    System.out.print("Enter username: ");
+                    String loginUsername = scanner.nextLine();
+                    System.out.print("Enter password: ");
+                    String loginPassword = scanner.nextLine();
+                    if (votingSystem.loginUser(loginUsername, loginPassword)) {
+                        System.out.println("Login successful.");
+                        User currentUser = votingSystem.users.get(loginUsername);
+                        votingSystem.castVote(currentUser);
+                    } else {
+                        System.out.println("Invalid username or password.");
+                    }
+                    break;
+                case 3:
+                    votingSystem.viewResults();
+                    break;
+                case 4:
+                    System.out.println("Exiting the system.");
+                    scanner.close();
+                    System.exit(0);
+                    break;
+                default:
+                    System.out.println("Invalid choice. Try again.");
+            }
+        }
+    }
+}
